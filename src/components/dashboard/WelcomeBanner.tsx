@@ -1,16 +1,18 @@
 import React from 'react';
 import { Sparkles } from 'lucide-react';
 import { MosqueSilhouette } from '@/components/ui/IslamicPattern';
-import { toArabicNumber, toHijriDate, formatHijriDate } from '@/lib/hijriDate';
+import { toArabicNumber, toHijriDate } from '@/lib/hijriDate';
 
 interface WelcomeBannerProps {
   userName?: string;
   ramadanDay?: number;
+  onEditSchedule?: () => void;
 }
 
 export const WelcomeBanner: React.FC<WelcomeBannerProps> = ({
   userName = 'أحمد',
   ramadanDay,
+  onEditSchedule,
 }) => {
   const today = new Date();
   const hijri = toHijriDate(today);
@@ -66,7 +68,10 @@ export const WelcomeBanner: React.FC<WelcomeBannerProps> = ({
           <button className="px-5 py-2.5 bg-gold hover:bg-gold-light text-primary-foreground font-semibold rounded-xl transition-all glow-gold">
             عرض قراءة الليلة
           </button>
-          <button className="px-5 py-2.5 bg-secondary hover:bg-secondary/80 text-foreground font-medium rounded-xl transition-all border border-border">
+          <button 
+            onClick={onEditSchedule}
+            className="px-5 py-2.5 bg-secondary hover:bg-secondary/80 text-foreground font-medium rounded-xl transition-all border border-border"
+          >
             تعديل الجدول
           </button>
         </div>

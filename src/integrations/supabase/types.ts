@@ -14,16 +14,161 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          city: Database["public"]["Enums"]["city_type"]
+          created_at: string
+          full_name: string
+          id: string
+          mosque_name: string | null
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          city?: Database["public"]["Enums"]["city_type"]
+          created_at?: string
+          full_name: string
+          id?: string
+          mosque_name?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          city?: Database["public"]["Enums"]["city_type"]
+          created_at?: string
+          full_name?: string
+          id?: string
+          mosque_name?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reading_plans: {
+        Row: {
+          created_at: string
+          id: string
+          pages_per_day: number
+          start_date: string
+          start_page: number
+          total_days: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          pages_per_day?: number
+          start_date?: string
+          start_page?: number
+          total_days?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          pages_per_day?: number
+          start_date?: string
+          start_page?: number
+          total_days?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      schedules: {
+        Row: {
+          created_at: string
+          date: string
+          day_number: number
+          end_page: number
+          id: string
+          reading_plan_id: string | null
+          start_page: number
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          day_number: number
+          end_page: number
+          id?: string
+          reading_plan_id?: string | null
+          start_page: number
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          day_number?: number
+          end_page?: number
+          id?: string
+          reading_plan_id?: string | null
+          start_page?: number
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedules_reading_plan_id_fkey"
+            columns: ["reading_plan_id"]
+            isOneToOne: false
+            referencedRelation: "reading_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "reciter"
+      city_type:
+        | "ramadi"
+        | "fallujah"
+        | "hit"
+        | "haditha"
+        | "ana"
+        | "rawa"
+        | "qaim"
+        | "rutba"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +295,18 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "reciter"],
+      city_type: [
+        "ramadi",
+        "fallujah",
+        "hit",
+        "haditha",
+        "ana",
+        "rawa",
+        "qaim",
+        "rutba",
+      ],
+    },
   },
 } as const
