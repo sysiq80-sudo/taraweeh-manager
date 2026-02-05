@@ -8,10 +8,16 @@ export interface PrayerTimesData {
   maghrib: string;
   isha: string;
   date: string;
+  hijriDate?: {
+    day: string;
+    month: string;
+    monthAr: string;
+    year: string;
+  };
 }
 
-// Al Anbar coordinates (Ramadi as center)
-const AL_ANBAR_COORDS = {
+// Ramadi, Al Anbar coordinates
+const RAMADI_COORDS = {
   latitude: 33.4251,
   longitude: 43.3019,
 };
@@ -22,8 +28,9 @@ export async function fetchPrayerTimes(date: Date = new Date()): Promise<PrayerT
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
 
+    // Using timingsByCity endpoint for Ramadi, Iraq with method 3 (Muslim World League)
     const response = await fetch(
-      `https://api.aladhan.com/v1/timings/${day}-${month}-${year}?latitude=${AL_ANBAR_COORDS.latitude}&longitude=${AL_ANBAR_COORDS.longitude}&method=3&school=0`
+      `https://api.aladhan.com/v1/timings/${day}-${month}-${year}?latitude=${RAMADI_COORDS.latitude}&longitude=${RAMADI_COORDS.longitude}&method=3&school=0`
     );
 
     if (!response.ok) {
@@ -32,6 +39,7 @@ export async function fetchPrayerTimes(date: Date = new Date()): Promise<PrayerT
 
     const data = await response.json();
     const timings = data.data.timings;
+    const hijri = data.data.date.hijri;
 
     return {
       fajr: timings.Fajr,
@@ -41,6 +49,12 @@ export async function fetchPrayerTimes(date: Date = new Date()): Promise<PrayerT
       maghrib: timings.Maghrib,
       isha: timings.Isha,
       date: data.data.date.readable,
+      hijriDate: {
+        day: hijri.day,
+        month: hijri.month.number.toString(),
+        monthAr: hijri.month.ar,
+        year: hijri.year,
+      },
     };
   } catch (error) {
     console.error('Error fetching prayer times:', error);

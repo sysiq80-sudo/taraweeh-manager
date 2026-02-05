@@ -1,18 +1,32 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Calendar } from 'lucide-react';
 import {
-  formatHijriDate,
   formatGregorianDateArabic,
   getArabicDayName,
-  toHijriDate,
   toArabicNumber,
 } from '@/lib/hijriDate';
+import { fetchPrayerTimes, PrayerTimesData } from '@/lib/prayerTimes';
 
 export const DateWidget: React.FC = () => {
+  const [prayerData, setPrayerData] = useState<PrayerTimesData | null>(null);
   const today = new Date();
-  const hijri = toHijriDate(today);
   const dayName = getArabicDayName(today);
-  const isRamadan = hijri.month === 9;
+
+  useEffect(() => {
+    const loadData = async () => {
+      const data = await fetchPrayerTimes();
+      setPrayerData(data);
+    };
+    loadData();
+  }, []);
+
+  // Use Hijri date from API if available
+  const hijriDisplay = prayerData?.hijriDate 
+    ? `${toArabicNumber(parseInt(prayerData.hijriDate.day))} ${prayerData.hijriDate.monthAr} ${toArabicNumber(parseInt(prayerData.hijriDate.year))} هـ`
+    : null;
+  
+  const isRamadan = prayerData?.hijriDate?.month === '9';
+  const ramadanDay = prayerData?.hijriDate ? parseInt(prayerData.hijriDate.day) : null;
 
   return (
     <div className="glass rounded-2xl p-6 card-hover">
@@ -33,10 +47,14 @@ export const DateWidget: React.FC = () => {
 
       {/* Hijri Date */}
       <div className="mb-4">
-        <p className="text-xl font-semibold text-gold">{formatHijriDate(today)}</p>
-        {isRamadan && (
+        {hijriDisplay ? (
+          <p className="text-xl font-semibold text-gold">{hijriDisplay}</p>
+        ) : (
+          <div className="h-7 bg-muted rounded w-48 animate-pulse" />
+        )}
+        {isRamadan && ramadanDay && (
           <p className="text-muted-foreground mt-1">
-            الليلة {toArabicNumber(hijri.day)} من رمضان
+            الليلة {toArabicNumber(ramadanDay)} من رمضان
           </p>
         )}
       </div>

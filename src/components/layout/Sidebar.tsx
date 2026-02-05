@@ -15,6 +15,7 @@ interface SidebarProps {
   onClose: () => void;
   activeItem?: string;
   onItemClick?: (item: string) => void;
+  onSignOut?: () => void;
 }
 
 interface NavItem {
@@ -38,6 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onClose,
   activeItem = 'dashboard',
   onItemClick,
+  onSignOut,
 }) => {
   return (
     <>
@@ -102,7 +104,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           {/* Footer */}
           <div className="p-4 border-t border-border">
-            <button className="w-full flex items-center gap-3 p-3 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all">
+            <button 
+              onClick={onSignOut}
+              className="w-full flex items-center gap-3 p-3 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all"
+            >
               <LogOut className="w-5 h-5" />
               <span className="font-medium">تسجيل الخروج</span>
             </button>

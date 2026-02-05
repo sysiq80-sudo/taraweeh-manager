@@ -1,28 +1,49 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, Check, Circle } from 'lucide-react';
 import { toArabicNumber } from '@/lib/hijriDate';
-
-interface DaySchedule {
-  day: number;
-  juz: number;
-  status: 'completed' | 'today' | 'upcoming' | 'absent';
-}
+import { Schedule } from '@/hooks/useSchedule';
 
 interface ScheduleCalendarProps {
   currentDay?: number;
-  scheduleData?: DaySchedule[];
+  schedules?: Schedule[];
+  loading?: boolean;
 }
 
-const defaultSchedule: DaySchedule[] = Array.from({ length: 30 }, (_, i) => ({
-  day: i + 1,
-  juz: i + 1,
-  status: i < 4 ? 'completed' : i === 4 ? 'today' : 'upcoming',
-}));
-
 export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
-  currentDay = 5,
-  scheduleData = defaultSchedule,
+  currentDay = 1,
+  schedules = [],
+  loading = false,
 }) => {
+  // Generate display data - either from real schedules or default placeholders
+  const displayData = schedules.length > 0 
+    ? schedules.map(s => ({
+        day: s.day_number,
+        juz: Math.ceil(s.start_page / 20),
+        status: s.status as 'completed' | 'today' | 'upcoming' | 'absent',
+      }))
+    : Array.from({ length: 30 }, (_, i) => ({
+        day: i + 1,
+        juz: i + 1,
+        status: (i < currentDay - 1 ? 'completed' : i === currentDay - 1 ? 'today' : 'upcoming') as 'completed' | 'today' | 'upcoming' | 'absent',
+      }));
+
+  const completedCount = displayData.filter(d => d.status === 'completed').length;
+  const todayCount = displayData.filter(d => d.status === 'today').length;
+  const remainingCount = displayData.filter(d => d.status === 'upcoming').length;
+
+  if (loading) {
+    return (
+      <div className="glass rounded-2xl p-6 animate-pulse">
+        <div className="h-8 bg-muted rounded w-1/3 mb-6" />
+        <div className="grid grid-cols-6 gap-2">
+          {Array.from({ length: 30 }).map((_, i) => (
+            <div key={i} className="h-16 bg-muted rounded-xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="glass rounded-2xl p-6 card-hover">
       {/* Header */}
@@ -57,7 +78,7 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
 
       {/* Calendar Grid */}
       <div className="grid grid-cols-6 gap-2">
-        {scheduleData.map((schedule) => (
+        {displayData.map((schedule) => (
           <div
             key={schedule.day}
             className={`
@@ -66,14 +87,17 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
                 ? 'bg-primary/20 border-2 border-primary ring-2 ring-primary/20' 
                 : schedule.status === 'completed'
                   ? 'bg-success/10 border border-success/30'
-                  : 'bg-secondary/50 hover:bg-secondary border border-transparent'
+                  : schedule.status === 'absent'
+                    ? 'bg-destructive/10 border border-destructive/30'
+                    : 'bg-secondary/50 hover:bg-secondary border border-transparent'
               }
             `}
           >
             {/* Day Number */}
             <p className={`text-lg font-bold mb-1 ${
               schedule.status === 'today' ? 'text-primary' : 
-              schedule.status === 'completed' ? 'text-success' : 'text-foreground'
+              schedule.status === 'completed' ? 'text-success' : 
+              schedule.status === 'absent' ? 'text-destructive' : 'text-foreground'
             }`}>
               {toArabicNumber(schedule.day)}
             </p>
@@ -99,15 +123,15 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
       {/* Quick Stats */}
       <div className="mt-6 pt-4 border-t border-border/50 flex items-center justify-between text-sm">
         <div className="text-center">
-          <p className="text-2xl font-bold text-success">{toArabicNumber(4)}</p>
+          <p className="text-2xl font-bold text-success">{toArabicNumber(completedCount)}</p>
           <p className="text-muted-foreground">مكتمل</p>
         </div>
         <div className="text-center">
-          <p className="text-2xl font-bold text-primary">{toArabicNumber(1)}</p>
+          <p className="text-2xl font-bold text-primary">{toArabicNumber(todayCount)}</p>
           <p className="text-muted-foreground">اليوم</p>
         </div>
         <div className="text-center">
-          <p className="text-2xl font-bold text-muted-foreground">{toArabicNumber(25)}</p>
+          <p className="text-2xl font-bold text-muted-foreground">{toArabicNumber(remainingCount)}</p>
           <p className="text-muted-foreground">متبقي</p>
         </div>
       </div>
