@@ -14,14 +14,55 @@ export type Database = {
   }
   public: {
     Tables: {
+      mosque_reciters: {
+        Row: {
+          assigned_at: string | null
+          created_at: string | null
+          id: string
+          mosque_admin_id: string
+          reciter_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          created_at?: string | null
+          id?: string
+          mosque_admin_id: string
+          reciter_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          created_at?: string | null
+          id?: string
+          mosque_admin_id?: string
+          reciter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mosque_reciters_mosque_admin_id_fkey"
+            columns: ["mosque_admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mosque_reciters_reciter_id_fkey"
+            columns: ["reciter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           city: Database["public"]["Enums"]["city_type"]
           created_at: string
           full_name: string
           id: string
+          mosque_id: string | null
           mosque_name: string | null
           phone: string | null
+          role: string | null
           updated_at: string
           user_id: string
         }
@@ -30,8 +71,10 @@ export type Database = {
           created_at?: string
           full_name: string
           id?: string
+          mosque_id?: string | null
           mosque_name?: string | null
           phone?: string | null
+          role?: string | null
           updated_at?: string
           user_id: string
         }
@@ -40,18 +83,31 @@ export type Database = {
           created_at?: string
           full_name?: string
           id?: string
+          mosque_id?: string | null
           mosque_name?: string | null
           phone?: string | null
+          role?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_mosque_id_fkey"
+            columns: ["mosque_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reading_plans: {
         Row: {
           created_at: string
+          has_qiyam_plan: boolean | null
           id: string
           pages_per_day: number
+          qiyam_start_day: number | null
+          share_token: string | null
           start_date: string
           start_page: number
           total_days: number
@@ -60,8 +116,11 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          has_qiyam_plan?: boolean | null
           id?: string
           pages_per_day?: number
+          qiyam_start_day?: number | null
+          share_token?: string | null
           start_date?: string
           start_page?: number
           total_days?: number
@@ -70,8 +129,11 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          has_qiyam_plan?: boolean | null
           id?: string
           pages_per_day?: number
+          qiyam_start_day?: number | null
+          share_token?: string | null
           start_date?: string
           start_page?: number
           total_days?: number
@@ -87,9 +149,12 @@ export type Database = {
           day_number: number
           end_page: number
           id: string
+          imam_assignments: Json | null
+          qiyam_reading_plan_id: string | null
           reading_plan_id: string | null
           start_page: number
           status: string
+          type: string | null
           updated_at: string
           user_id: string
         }
@@ -99,9 +164,12 @@ export type Database = {
           day_number: number
           end_page: number
           id?: string
+          imam_assignments?: Json | null
+          qiyam_reading_plan_id?: string | null
           reading_plan_id?: string | null
           start_page: number
           status?: string
+          type?: string | null
           updated_at?: string
           user_id: string
         }
@@ -111,13 +179,23 @@ export type Database = {
           day_number?: number
           end_page?: number
           id?: string
+          imam_assignments?: Json | null
+          qiyam_reading_plan_id?: string | null
           reading_plan_id?: string | null
           start_page?: number
           status?: string
+          type?: string | null
           updated_at?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "schedules_qiyam_reading_plan_id_fkey"
+            columns: ["qiyam_reading_plan_id"]
+            isOneToOne: false
+            referencedRelation: "reading_plans"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "schedules_reading_plan_id_fkey"
             columns: ["reading_plan_id"]
@@ -150,11 +228,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_or_create_share_token: {
+        Args: { _reading_plan_id: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      revoke_share_token: {
+        Args: { _reading_plan_id: string }
         Returns: boolean
       }
     }
