@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node -e \"const fs=require('fs');const p=require('path');const f=p.join('dist','index.html');const c=fs.readFileSync(f,'utf8').replace('</head>','<!-- build:'+Date.now()+' --></head>');fs.writeFileSync(f,c);\"",
+    "build": "vite build && node -e \"const fs=require('fs');const p=require('path');const d='dist';const files=['_redirects','_headers'];for(const f of files){const fp=p.join(d,f);if(fs.existsSync(fp))fs.unlinkSync(fp);}const html=p.join(d,'index.html');const c=fs.readFileSync(html,'utf8').replace('</head>','<!-- build:'+Date.now()+' --></head>');fs.writeFileSync(html,c);\"",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
