@@ -118,7 +118,7 @@ export function useSchedule() {
   const createReadingPlan = async (
     startPage: number,
     pagesPerDay: number,
-    imamAssignments?: ImamAssignment[]
+    imamPeriods?: Array<{ imamName: string; startDay: number; endDay: number; rakatsCount: number }>
   ) => {
     if (!user) return { error: new Error('Not authenticated') };
 
@@ -151,18 +151,28 @@ export function useSchedule() {
     for (let i = 0; i < totalDays; i++) {
       const scheduleDate = new Date(startDate);
       scheduleDate.setDate(scheduleDate.getDate() + i);
-      
+      const dayNum = i + 1;
       const endPage = Math.min(currentPage + pagesPerDay - 1, totalQuranPages);
-      
+
+      // Find which period this day belongs to
+      let assignedPeriod = null;
+      if (imamPeriods && imamPeriods.length > 0) {
+        assignedPeriod = imamPeriods.find(
+          (period) => dayNum >= period.startDay && dayNum <= period.endDay
+        );
+      }
+
       schedulesToInsert.push({
         user_id: user.id,
         reading_plan_id: planData.id,
         date: scheduleDate.toISOString().split('T')[0],
-        day_number: i + 1,
+        day_number: dayNum,
         start_page: currentPage,
         end_page: endPage,
         status: i === 0 ? 'today' : 'upcoming',
-        imam_assignments: imamAssignments || null,
+        imam_assignments: assignedPeriod
+          ? [{ imamName: assignedPeriod.imamName, rakatsCount: assignedPeriod.rakatsCount, startDay: assignedPeriod.startDay, endDay: assignedPeriod.endDay }]
+          : null,
       });
 
       currentPage = endPage + 1;

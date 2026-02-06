@@ -30,9 +30,10 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose })
   const [activeTab, setActiveTab] = useState<TabType>('juz');
 
   const [startPage, setStartPage] = useState(quranStartPage);
-  const [pagesPerNight, setPagesPerNight] = useState(2);
-  const [rakatsPerNight, setRakatsPerNight] = useState(8);
+  const [totalPages, setTotalPages] = useState(totalQuranPages);
   const [duration, setDuration] = useState(30);
+  const [pagesPerNight, setPagesPerNight] = useState(Math.ceil(totalQuranPages / 30));
+  const [rakatsPerNight, setRakatsPerNight] = useState(8);
 
   const [selectedJuz, setSelectedJuz] = useState<number | null>(null);
   const [selectedSurah, setSelectedSurah] = useState<number | null>(null);
@@ -46,12 +47,13 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose })
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Inverted calculation: duration is fixed, daily pages is calculated
   useEffect(() => {
-    if (pagesPerNight > 0) {
-      const calculatedDays = calculateTotalDays(pagesPerNight, startPage, totalQuranPages);
-      setDuration(calculatedDays);
+    if (duration > 0) {
+      const calculatedPages = Math.ceil(totalPages / duration);
+      setPagesPerNight(calculatedPages);
     }
-  }, [pagesPerNight, startPage]);
+  }, [duration, totalPages]);
 
   useEffect(() => {
     setImamAssignments((prev) => {
@@ -351,42 +353,63 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose })
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-3">
                     <FileText className="w-4 h-4 inline ml-2" />
-                    كم صفحة تريد قراءتها كل ليلة؟
+                    كم عدد صفحات الختمة؟
                   </label>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">عدد الصفحات:</span>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          min={0.5}
-                          max={50}
-                          step={0.5}
-                          value={pagesPerNight}
-                          onChange={(e) => setPagesPerNight(parseFloat(e.target.value) || 1)}
-                          className="w-24 px-4 py-3 bg-secondary/50 border border-border rounded-lg text-foreground text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-gold/50"
-                        />
-                        <span className="text-foreground">صفحة/ليلة</span>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 flex-wrap">
-                      {[1, 1.5, 2, 2.5, 3, 4, 5].map((pages) => (
-                        <button
-                          key={pages}
-                          type="button"
-                          onClick={() => setPagesPerNight(pages)}
-                          className={
-                            pagesPerNight === pages
-                              ? 'px-3 py-2 rounded-lg font-medium bg-gold/20 border-2 border-gold text-gold transition-all'
-                              : 'px-3 py-2 rounded-lg font-medium bg-secondary/50 border-2 border-transparent text-muted-foreground hover:border-gold/30'
-                          }
-                        >
-                          {toArabicNumber(pages)}
-                        </button>
-                      ))}
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min={1}
+                      max={604}
+                      value={totalPages}
+                      onChange={(e) => setTotalPages(parseInt(e.target.value, 10) || totalQuranPages)}
+                      className="w-32 px-4 py-3 bg-secondary/50 border border-border rounded-xl text-foreground text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-gold/50"
+                    />
+                    <span className="text-muted-foreground">صفحة</span>
                   </div>
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-3">
+                    <Calendar className="w-4 h-4 inline ml-2" />
+                    كم يوم؟
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min={1}
+                      max={30}
+                      value={duration}
+                      onChange={(e) => setDuration(parseInt(e.target.value, 10) || 30)}
+                      className="w-32 px-4 py-3 bg-secondary/50 border border-border rounded-xl text-foreground text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-gold/50"
+                    />
+                    <span className="text-muted-foreground">يوم</span>
+                  </div>
+                </div>
+                <div className="p-4 bg-gold/10 border border-gold/30 rounded-xl">
+                  <p className="text-sm text-gold mb-2"><strong>الملخص:</strong></p>
+                  <p className="text-sm text-muted-foreground">
+                    {toArabicNumber(totalPages)} صفحة ÷ {toArabicNumber(duration)} يوم
+                  </p>
+                  <p className="text-sm text-gold font-semibold mt-2">= {toArabicNumber(pagesPerNight)} صفحة/ليلة</p>
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setWizardStep('start_point')}
+                  className="flex-1 py-3 bg-secondary hover:bg-secondary/80 text-foreground font-medium rounded-xl transition-all"
+                >
+                  السابق
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWizardStep('imam_allocation')}
+                  className="flex-1 py-3 bg-gold hover:bg-gold-light text-primary-foreground font-semibold rounded-xl transition-all"
+                >
+                  التالي: تعيين الفترات
+                </button>
+              </div>
+            </>
+          )}
 
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-3">
@@ -461,65 +484,111 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose })
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-3">
                     <Users className="w-4 h-4 inline ml-2" />
-                    كم امام يشارك في الصلاة؟
+                    إضافة فترات التعيين
                   </label>
-                  <div className="flex gap-2 flex-wrap">
-                    {[1, 2, 3, 4, 5].map((count) => (
-                      <button
-                        key={count}
-                        type="button"
-                        onClick={() => handleImamCountChange(count)}
-                        className={
-                          imamCount === count
-                            ? 'px-4 py-2 rounded-lg font-bold bg-gold text-primary-foreground transition-all'
-                            : 'px-4 py-2 rounded-lg font-bold bg-secondary/50 text-muted-foreground hover:bg-secondary'
-                        }
-                      >
-                        {count === 1 ? 'امام واحد' : `${toArabicNumber(count)} ائمة`}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {imamCount > 1 && (
-                  <div className="space-y-4">
-                    <p className="text-sm text-muted-foreground">قم بتسمية الائمة وتحديد الركعات لكل منهم:</p>
-                    {imamAssignments.map((assignment, index) => (
-                      <div key={index} className="p-4 bg-secondary/30 rounded-xl space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-foreground">التحويلة {toArabicNumber(index + 1)}</span>
-                          <span className="text-xs text-muted-foreground">
-                            الركعات {toArabicNumber(assignment.startRakat)} - {toArabicNumber(assignment.endRakat)}
-                          </span>
-                        </div>
+                  <button
+                    type="button"
+                    className="py-2 px-4 bg-gold text-primary-foreground rounded-lg font-bold mb-4"
+                    onClick={() => {
+                      setImamAssignments((prev) => [
+                        ...prev,
+                        { imamName: '', startDay: duration, endDay: duration, rakatsCount: rakatsPerNight },
+                      ]);
+                    }}
+                  >
+                    + إضافة فترة
+                  </button>
+                  {imamAssignments.map((assignment, idx) => (
+                    <div key={idx} className="p-4 bg-secondary/30 rounded-xl space-y-3">
+                      <div className="flex items-center gap-3">
                         <input
                           type="text"
                           placeholder="اسم الامام"
-                          value={assignment.imamName}
-                          onChange={(e) => handleImamNameChange(index, e.target.value)}
-                          className="w-full px-4 py-2 bg-background/50 border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50"
+                          value={assignment.imamName || ''}
+                          onChange={(e) => {
+                            setImamAssignments((prev) => {
+                              const updated = [...prev];
+                              updated[idx] = { ...updated[idx], imamName: e.target.value };
+                              return updated;
+                            });
+                          }}
+                          className="flex-1 px-4 py-2 bg-background/50 border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-gold/50"
                         />
+                        <input
+                          type="number"
+                          min={1}
+                          max={duration}
+                          value={assignment.startDay || 1}
+                          onChange={(e) => {
+                            setImamAssignments((prev) => {
+                              const updated = [...prev];
+                              updated[idx] = { ...updated[idx], startDay: parseInt(e.target.value, 10) || 1 };
+                              return updated;
+                            });
+                          }}
+                          className="w-20 px-2 py-2 bg-background/50 border border-border rounded-lg text-foreground text-center font-bold focus:outline-none focus:ring-2 focus:ring-gold/50"
+                          placeholder="بداية الفترة"
+                        />
+                        <input
+                          type="number"
+                          min={1}
+                          max={duration}
+                          value={assignment.endDay || duration}
+                          onChange={(e) => {
+                            setImamAssignments((prev) => {
+                              const updated = [...prev];
+                              updated[idx] = { ...updated[idx], endDay: parseInt(e.target.value, 10) || duration };
+                              return updated;
+                            });
+                          }}
+                          className="w-20 px-2 py-2 bg-background/50 border border-border rounded-lg text-foreground text-center font-bold focus:outline-none focus:ring-2 focus:ring-gold/50"
+                          placeholder="نهاية الفترة"
+                        />
+                        <input
+                          type="number"
+                          min={1}
+                          max={rakatsPerNight}
+                          value={assignment.rakatsCount || rakatsPerNight}
+                          onChange={(e) => {
+                            setImamAssignments((prev) => {
+                              const updated = [...prev];
+                              updated[idx] = { ...updated[idx], rakatsCount: parseInt(e.target.value, 10) || rakatsPerNight };
+                              return updated;
+                            });
+                          }}
+                          className="w-20 px-2 py-2 bg-background/50 border border-border rounded-lg text-foreground text-center font-bold focus:outline-none focus:ring-2 focus:ring-gold/50"
+                          placeholder="عدد الركعات"
+                        />
+                        <button
+                          type="button"
+                          className="ml-2 px-2 py-2 bg-destructive text-white rounded-lg"
+                          onClick={() => setImamAssignments((prev) => prev.filter((_, i) => i !== idx))}
+                        >
+                          حذف
+                        </button>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setWizardStep('daily_quantity')}
-                  className="flex-1 py-3 bg-secondary hover:bg-secondary/80 text-foreground font-medium rounded-xl transition-all"
-                >
-                  السابق
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setWizardStep('preview')}
-                  className="flex-1 py-3 bg-gold hover:bg-gold-light text-primary-foreground font-semibold rounded-xl transition-all"
-                >
-                  التالي: معاينة
-                </button>
+                      <div className="text-xs text-muted-foreground">
+                        الفترة: رمضان {toArabicNumber(assignment.startDay || 1)} إلى {toArabicNumber(assignment.endDay || duration)} | الركعات: {toArabicNumber(assignment.rakatsCount || rakatsPerNight)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-3 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => setWizardStep('daily_quantity')}
+                    className="flex-1 py-3 bg-secondary hover:bg-secondary/80 text-foreground font-medium rounded-xl transition-all"
+                  >
+                    السابق
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setWizardStep('preview')}
+                    className="flex-1 py-3 bg-gold hover:bg-gold-light text-primary-foreground font-semibold rounded-xl transition-all"
+                  >
+                    التالي: معاينة
+                  </button>
+                </div>
               </div>
             </>
           )}
@@ -561,68 +630,52 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose })
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium text-muted-foreground">معاينة الليالي الاولى:</h4>
                   {schedulePreview.map((night) => (
-                    <div key={night.nightNumber} className="p-4 bg-background/50 rounded-lg space-y-3">
-                      <div className="flex items-center justify-between">
+                    <div key={night.nightNumber} className="p-4 bg-background/50 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
                         <span className="font-bold text-gold">الليلة {toArabicNumber(night.nightNumber)}</span>
                         <span className="text-xs text-muted-foreground">
                           ~{toArabicNumber(night.totalPages)} صفحة | {toArabicNumber(night.rakatsCount)} ركعة
                         </span>
                       </div>
-
-                      {imamCount > 1 &&
-                        imamAssignments.map((assignment, imamIdx) => {
-                          const imamRakats = night.rakats.filter(
-                            (r) => r.rakatNumber >= assignment.startRakat && r.rakatNumber <= assignment.endRakat
-                          );
-                          if (imamRakats.length === 0) return null;
-
-                          return (
-                            <div key={imamIdx} className="mt-2 p-3 bg-gold/10 rounded-lg border border-gold/20">
-                              <p className="text-xs font-semibold text-gold mb-2">
-                                {assignment.imamName
-                                  ? `الامام: ${assignment.imamName}`
-                                  : `الامام ${toArabicNumber(imamIdx + 1)}`}
-                              </p>
-                              <div className="space-y-1">
-                                {imamRakats.slice(0, 3).map((rakat) => (
-                                  <div key={rakat.rakatNumber} className="text-xs text-muted-foreground flex justify-between">
-                                    <span>ركعة {toArabicNumber(rakat.rakatNumber)}</span>
-                                    <span>صفحة {toArabicNumber(rakat.partition.page)}</span>
-                                  </div>
-                                ))}
-                                {imamRakats.slice(0, 3).map((rakat) => (
-                                  <div key={`${rakat.rakatNumber}-ayah`} className="text-[11px] text-muted-foreground/80">
-                                    {rakat.surahNameArabic} {toArabicNumber(rakat.startAyah)} - {toArabicNumber(rakat.endAyah)}
-                                  </div>
-                                ))}
-                                {imamRakats.length > 3 && (
-                                  <p className="text-xs text-muted-foreground mt-1">
-                                    + {toArabicNumber(imamRakats.length - 3)} ركعات اخرى
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-
-                      {imamCount === 1 && (
-                        <div className="grid grid-cols-2 gap-2 mt-2">
-                          {night.rakats.slice(0, 6).map((rakat) => (
-                            <div key={rakat.rakatNumber} className="text-xs p-2 bg-gold/10 rounded border border-gold/30">
-                              <div className="font-bold text-gold">ركعة {toArabicNumber(rakat.rakatNumber)}</div>
-                              <div className="text-muted-foreground mt-1">
-                                <div className="font-semibold">صفحة {toArabicNumber(rakat.partition.page)}</div>
-                                <div className="text-[10px] truncate">
-                                  {rakat.surahNameArabic} {toArabicNumber(rakat.startAyah)} - {toArabicNumber(rakat.endAyah)}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {night.rakats.length > 6 && (
-                        <p className="text-xs text-muted-foreground text-center">+ {toArabicNumber(night.rakats.length - 6)} ركعات اخرى</p>
-                      )}
+                      <table className="w-full text-xs border border-gold/20 rounded-lg">
+                        <thead>
+                          <tr className="bg-gold/10">
+                            <th className="p-2">ركعة</th>
+                            <th className="p-2">السورة</th>
+                            <th className="p-2">صفحة</th>
+                            <th className="p-2">الآيات</th>
+                            <th className="p-2">الامام</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {night.rakats.map((rakat, idx) => {
+                            // Find Imam for this rakat
+                            let imamName = '';
+                            let highlight = false;
+                            if (imamAssignments && imamAssignments.length > 0) {
+                              for (const period of imamAssignments) {
+                                if (
+                                  night.nightNumber >= (period.startDay || 1) &&
+                                  night.nightNumber <= (period.endDay || duration)
+                                ) {
+                                  imamName = period.imamName || '';
+                                  highlight = true;
+                                  break;
+                                }
+                              }
+                            }
+                            return (
+                              <tr key={rakat.rakatNumber} className={highlight ? 'bg-gold/20 font-bold' : ''}>
+                                <td className="p-2">{toArabicNumber(rakat.rakatNumber)}</td>
+                                <td className="p-2">{rakat.surahNameArabic}</td>
+                                <td className="p-2">{toArabicNumber(rakat.partition.page)}</td>
+                                <td className="p-2">{toArabicNumber(rakat.startAyah)} - {toArabicNumber(rakat.endAyah)}</td>
+                                <td className="p-2">{imamName || '-'}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
                     </div>
                   ))}
                   {duration > 3 && (
