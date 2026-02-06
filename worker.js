@@ -3,6 +3,9 @@
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    const accept = request.headers.get("accept") || "";
+    const isHtmlRequest = accept.includes("text/html");
+    const hasExtension = /\.[a-zA-Z0-9]+$/.test(url.pathname);
 
     // Try to serve the static asset directly
     const assetResponse = await env.ASSETS.fetch(request);
@@ -12,7 +15,11 @@ export default {
       return assetResponse;
     }
 
-    // SPA fallback: serve index.html for any non-file route
-    return env.ASSETS.fetch(new URL("/index.html", url.origin));
+    // SPA fallback: only for HTML navigation without a file extension
+    if (isHtmlRequest && !hasExtension) {
+      return env.ASSETS.fetch(new URL("/index.html", url.origin));
+    }
+
+    return new Response("Not Found", { status: 404 });
   },
 };
