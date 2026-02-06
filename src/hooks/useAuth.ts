@@ -32,7 +32,7 @@ export function useAuth() {
       const siteUrl = (import.meta.env.VITE_SITE_URL || window.location.origin).replace(/\/+$/, '');
       const redirectUrl = `${siteUrl}/auth`;
       
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -47,7 +47,7 @@ export function useAuth() {
         console.error('SignUp error:', error);
       }
       
-      return { error };
+      return { data, error };
     } catch (err) {
       console.error('SignUp exception:', err);
       return { error: err instanceof Error ? err : new Error('Sign up failed') };

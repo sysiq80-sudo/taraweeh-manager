@@ -116,7 +116,7 @@ const Auth: React.FC = () => {
           });
         }
       } else if (mode === 'signup') {
-        const { error } = await signUp(email, password);
+        const { data, error } = await signUp(email, password);
         if (error) {
           console.error('Signup error:', error);
 
@@ -139,10 +139,16 @@ const Auth: React.FC = () => {
               variant: 'destructive',
             });
           }
+        } else if (data?.session) {
+          toast({
+            title: 'تم إنشاء الحساب',
+            description: 'تم تسجيل الدخول تلقائياً',
+          });
+          navigate('/onboarding', { replace: true });
         } else {
           toast({
             title: 'تم إنشاء الحساب',
-            description: 'تم إرسال رابط التأكيد إلى بريدك الإلكتروني. تحقق من بريدك لتفعيل الحساب',
+            description: 'يرجى تسجيل الدخول للمتابعة',
           });
           setEmail('');
           setPassword('');
