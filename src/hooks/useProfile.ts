@@ -113,13 +113,23 @@ export function useProfile() {
 
     if (profileError) return { error: profileError };
 
-    // Upsert role (update if exists, insert if not) - use user_id as the unique key
-    const { error: roleError } = await supabase
+    // Upsert role without relying on a unique constraint
+    const { data: existingRole, error: existingRoleError } = await supabase
       .from('user_roles')
-      .upsert({
-        user_id: user.id,
-        role: data.role,
-      }, { onConflict: 'user_id' });
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (existingRoleError) return { error: existingRoleError };
+
+    const { error: roleError } = existingRole
+      ? await supabase
+          .from('user_roles')
+          .update({ role: data.role })
+          .eq('user_id', user.id)
+      : await supabase
+          .from('user_roles')
+          .insert({ user_id: user.id, role: data.role });
 
     if (roleError) return { error: roleError };
 
