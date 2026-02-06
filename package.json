@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node -e \"const fs=require('fs'),p=require('path'),d='dist';fs.readdirSync(d).filter(f=>f.startsWith('_')).forEach(f=>fs.unlinkSync(p.join(d,f)));const h=p.join(d,'index.html');let c=fs.readFileSync(h,'utf8');c=c.replace('</head>','<!-- build:'+Date.now()+' --></head>');fs.writeFileSync(h,c)\"",
+    "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",

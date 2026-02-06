@@ -13,8 +13,7 @@ dist-ssr
 *.local
 bun.lockb
 
-# Cloudflare - SPA routing handled by wrangler.jsonc
-public/_redirects
+# Cloudflare
 public/_headers
 
 # Editor directories and files
