@@ -1,6 +1,0 @@
-{
-  // Cloudflare Pages configuration
-  "name": "taraweeh-manager",
-  "type": "javascript",
-  "pages_build_output_dir": "dist"
-}
