@@ -28,18 +28,8 @@ const Onboarding: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Determine role automatically based on email
-  const determineRole = (): AppRole => {
-    if (!user?.email) return 'mosque_admin';
-    
-    // Check if email is super admin email
-    if (user.email === 'al3r18y@aol.com' || user.email.startsWith('admin@')) {
-      return 'super_admin';
-    }
-    
-    // Default role for all other users
-    return 'mosque_admin';
-  };
+  // Default role; the database promotes the first signup to super_admin
+  const determineRole = (): AppRole => 'mosque_admin';
 
   const role = determineRole();
 
