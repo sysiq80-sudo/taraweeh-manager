@@ -32,6 +32,7 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose })
   const [startPage, setStartPage] = useState(quranStartPage);
   const [totalPages, setTotalPages] = useState(totalQuranPages);
   const [duration, setDuration] = useState(30);
+  // Always auto-calculate pages per night for khatmah mode
   const [pagesPerNight, setPagesPerNight] = useState(Math.ceil(totalQuranPages / 30));
   const [rakatsPerNight, setRakatsPerNight] = useState(8);
 
@@ -49,6 +50,7 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose })
 
   // Inverted calculation: duration is fixed, daily pages is calculated
   useEffect(() => {
+    // Always auto-calculate pages per night for khatmah mode
     if (duration > 0) {
       const calculatedPages = Math.ceil(totalPages / duration);
       setPagesPerNight(calculatedPages);
@@ -141,14 +143,16 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose })
 
   if (!isOpen) return null;
 
+  // In khatmah mode, completion is always after 'duration' days
   const endPage = Math.min(startPage + pagesPerNight * duration - 1, totalQuranPages);
   const totalPagesInPlan = endPage - startPage + 1;
-  const willComplete = endPage >= totalQuranPages;
+  const willComplete = duration >= Math.ceil(totalPages / pagesPerNight);
 
+  // Preview only for the fixed duration
   const schedulePreview = generateSchedulePreviewSimple(
     startPage,
     pagesPerNight,
-    Math.min(duration, 3),
+    duration,
     rakatsPerNight
   );
 
