@@ -1,16 +1,15 @@
 import React from 'react';
-import { Menu, Bell, User, Moon as MoonIcon } from 'lucide-react';
+import { Bell, User, Moon as MoonIcon } from 'lucide-react';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
 interface HeaderProps {
   userName?: string;
   mosqueName?: string;
-  onMenuClick?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   userName = 'أحمد محمد',
   mosqueName = 'مسجد الرحمن - الرمادي',
-  onMenuClick,
 }) => {
   return (
     <header className="glass sticky top-0 z-50 border-b border-border/50">
@@ -18,12 +17,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center justify-between">
           {/* Logo & Title */}
           <div className="flex items-center gap-4">
-            <button
-              onClick={onMenuClick}
-              className="p-2 hover:bg-secondary rounded-lg transition-colors lg:hidden"
-            >
-              <Menu className="w-6 h-6 text-foreground" />
-            </button>
+            <SidebarTrigger className="p-2 hover:bg-secondary rounded-lg transition-colors" />
             
             <div className="flex items-center gap-3">
               {/* Logo Icon */}

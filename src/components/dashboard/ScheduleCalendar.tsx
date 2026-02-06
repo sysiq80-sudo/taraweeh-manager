@@ -50,11 +50,11 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-foreground">جدول رمضان</h2>
         <div className="flex items-center gap-2">
-          <button className="p-2 hover:bg-secondary rounded-lg transition-colors">
+          <button className="p-2 hover:bg-secondary rounded-lg transition-colors" title="الشهر السابق">
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </button>
           <span className="text-gold font-semibold">رمضان ١٤٤٦</span>
-          <button className="p-2 hover:bg-secondary rounded-lg transition-colors">
+          <button className="p-2 hover:bg-secondary rounded-lg transition-colors" title="الشهر التالي">
             <ChevronLeft className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
@@ -94,16 +94,13 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
             `}
           >
             {/* Day Number */}
-            <p className={`text-lg font-bold mb-1 ${
+            <p className={`text-lg font-bold ${
               schedule.status === 'today' ? 'text-primary' : 
               schedule.status === 'completed' ? 'text-success' : 
               schedule.status === 'absent' ? 'text-destructive' : 'text-foreground'
             }`}>
               {toArabicNumber(schedule.day)}
             </p>
-            
-            {/* Juz Number */}
-            <p className="text-xs text-muted-foreground">ج{toArabicNumber(schedule.juz)}</p>
 
             {/* Status Icon */}
             {schedule.status === 'completed' && (

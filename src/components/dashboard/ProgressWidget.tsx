@@ -21,7 +21,7 @@ export const ProgressWidget: React.FC<ProgressWidgetProps> = ({
     <div className="glass rounded-2xl p-6 card-hover">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-foreground">تقدم الختمة</h2>
+        <h2 className="text-xl font-bold text-foreground">تقدم الخطة</h2>
         <div className="flex items-center gap-2 text-gold">
           <TrendingUp className="w-5 h-5" />
           <span className="font-semibold">{toArabicNumber(currentStreak)} أيام متتالية</span>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Share2 } from 'lucide-react';
 import { MosqueSilhouette } from '@/components/ui/IslamicPattern';
 import { toArabicNumber, toHijriDate } from '@/lib/hijriDate';
 
@@ -7,12 +7,14 @@ interface WelcomeBannerProps {
   userName?: string;
   ramadanDay?: number;
   onEditSchedule?: () => void;
+  onShare?: () => void;
 }
 
 export const WelcomeBanner: React.FC<WelcomeBannerProps> = ({
   userName = 'أحمد',
   ramadanDay,
   onEditSchedule,
+  onShare,
 }) => {
   const today = new Date();
   const hijri = toHijriDate(today);
@@ -73,6 +75,13 @@ export const WelcomeBanner: React.FC<WelcomeBannerProps> = ({
             className="px-5 py-2.5 bg-secondary hover:bg-secondary/80 text-foreground font-medium rounded-xl transition-all border border-border"
           >
             تعديل الجدول
+          </button>
+          <button 
+            onClick={onShare}
+            className="px-5 py-2.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-500 font-medium rounded-xl transition-all border border-blue-500/30 flex items-center gap-2"
+          >
+            <Share2 className="w-4 h-4" />
+            مشاركة الجدول
           </button>
         </div>
       </div>

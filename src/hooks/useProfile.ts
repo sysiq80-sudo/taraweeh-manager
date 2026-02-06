@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
 export type CityType = 'ramadi' | 'fallujah' | 'hit' | 'haditha' | 'ana' | 'rawa' | 'qaim' | 'rutba';
-export type AppRole = 'admin' | 'reciter';
+export type AppRole = 'super_admin' | 'mosque_admin' | 'reciter';
 
 export interface Profile {
   id: string;
@@ -21,44 +21,72 @@ export function useProfile() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     if (!user) {
       setProfile(null);
       setRole(null);
+      setError(null);
       setLoading(false);
       return;
     }
 
+    let isMounted = true;
+
     const fetchProfile = async () => {
-      setLoading(true);
-      
-      // Fetch profile
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      
-      if (profileData) {
-        setProfile(profileData as Profile);
-      }
+      try {
+        setError(null);
+        setLoading(true);
+        
+        // Fetch profile
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        if (profileError) {
+          console.error('Profile fetch error:', profileError);
+          throw profileError;
+        }
+        
+        if (profileData && isMounted) {
+          setProfile(profileData as Profile);
+        }
 
-      // Fetch role
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      
-      if (roleData) {
-        setRole(roleData.role as AppRole);
-      }
+        // Fetch role
+        const { data: roleData, error: roleError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        if (roleError) {
+          console.error('Role fetch error:', roleError);
+          // Don't throw, role is optional
+        }
+        
+        if (roleData && isMounted) {
+          setRole(roleData.role as AppRole);
+        }
 
-      setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err instanceof Error ? err : new Error('Failed to fetch profile'));
+          setLoading(false);
+        }
+      }
     };
 
     fetchProfile();
+
+    return () => {
+      isMounted = false;
+    };
   }, [user]);
 
   const createProfile = async (data: {
@@ -70,26 +98,28 @@ export function useProfile() {
   }) => {
     if (!user) return { error: new Error('Not authenticated') };
 
-    // Create profile
+    // Upsert profile (update if exists, insert if not) - use id as the unique key
     const { error: profileError } = await supabase
       .from('profiles')
-      .insert({
+      .upsert({
+        id: user.id,
         user_id: user.id,
         full_name: data.full_name,
         mosque_name: data.mosque_name || null,
         city: data.city,
         phone: data.phone || null,
-      });
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'id' });
 
     if (profileError) return { error: profileError };
 
-    // Create role
+    // Upsert role (update if exists, insert if not) - use user_id as the unique key
     const { error: roleError } = await supabase
       .from('user_roles')
-      .insert({
+      .upsert({
         user_id: user.id,
         role: data.role,
-      });
+      }, { onConflict: 'user_id' });
 
     if (roleError) return { error: roleError };
 
@@ -112,6 +142,7 @@ export function useProfile() {
     profile,
     role,
     loading,
+    error,
     createProfile,
   };
 }

@@ -1,5 +1,8 @@
 // Quran data structure for scheduling
 
+// Quran starts at page 2 (page 1 is cover/Fatiha which is excluded)
+export const quranStartPage = 2;
+
 export interface QuranJuz {
   number: number;
   name: string;
