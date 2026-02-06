@@ -1,11 +1,12 @@
 #:schema node_modules/wrangler/config-schema.json
 
 name = "taraweeh"
+main = "worker.js"
 compatibility_date = "2026-02-06"
 
-# Serve static files from dist/ as a Workers Assets project
-# not_found_handling = "single-page-application" handles ALL SPA routing
-# NO _redirects file needed!
+# Static assets served from dist/
+# SPA routing handled by worker.js (no _redirects needed)
 [assets]
 directory = "./dist"
-not_found_handling = "single-page-application"
+binding = "ASSETS"
+not_found_handling = "none"
