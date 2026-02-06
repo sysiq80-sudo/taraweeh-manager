@@ -453,9 +453,9 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose })
                 <div className="p-4 bg-gold/10 border border-gold/30 rounded-xl">
                   <p className="text-sm text-gold mb-2"><strong>الملخص:</strong></p>
                   <p className="text-sm text-muted-foreground">
-                    {toArabicNumber(pagesPerNight)} صفحة × {toArabicNumber(rakatsPerNight)} ركعة يوميا
+                    {toArabicNumber(totalPages)} صفحة ÷ {toArabicNumber(duration)} يوم
                   </p>
-                  <p className="text-sm text-gold font-semibold mt-2">= إنهاء في {toArabicNumber(duration)} يوما</p>
+                  <p className="text-sm text-gold font-semibold mt-2">= {toArabicNumber(pagesPerNight)} صفحة/ليلة</p>
                 </div>
               </div>
 
