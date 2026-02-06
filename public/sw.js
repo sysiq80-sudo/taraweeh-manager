@@ -1,8 +1,9 @@
-const CACHE_NAME = 'taraweeh-v1';
+const CACHE_NAME = 'taraweeh-v2';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/assets/',
+  '/manifest.json',
+  '/sw.js',
 ];
 
 // تثبيت Service Worker
@@ -40,33 +41,33 @@ self.addEventListener('fetch', (event) => {
 
   event.respondWith(
     caches.match(event.request).then((response) => {
-      // إرجاع من الـ Cache إن وجدت
       if (response) {
         return response;
       }
 
-      // محاولة الحصول من الإنترنت وتخزين في الـ Cache
       return fetch(event.request)
         .then((response) => {
-          // تحقق من أن الاستجابة صحيحة
           if (!response || response.status !== 200 || response.type === 'error') {
             return response;
           }
 
-          // عمل نسخة من الاستجابة
-          const responseToCache = response.clone();
+          const contentType = response.headers.get('content-type') || '';
+          const isHtml = contentType.includes('text/html');
+          const isDoc = event.request.destination === 'document';
 
-          // تخزين في الـ Cache (تجاهل الأخطاء)
+          // Do not cache HTML responses for non-document requests (prevents HTML for JS)
+          if (isHtml && !isDoc) {
+            return response;
+          }
+
+          const responseToCache = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache).catch(() => {
-              // تجاهل أخطاء التخزين
-            });
+            cache.put(event.request, responseToCache).catch(() => {});
           });
 
           return response;
         })
         .catch(() => {
-          // إذا فشل الإنترنت والـ Cache، عودة إلى صفحة خطأ
           return new Response('Offline', {
             status: 503,
             statusText: 'Service Unavailable',
