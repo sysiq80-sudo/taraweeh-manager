@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User, Building, MapPin, Phone, Moon } from 'lucide-react';
 import { IslamicPattern } from '@/components/ui/IslamicPattern';
 import { useProfile, CityType, AppRole } from '@/hooks/useProfile';
@@ -20,6 +21,7 @@ const Onboarding: React.FC = () => {
   const { user } = useAuth();
   const { createProfile, profile, loading: profileLoading } = useProfile();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fullName, setFullName] = useState('');
@@ -33,13 +35,24 @@ const Onboarding: React.FC = () => {
 
   const role = determineRole();
 
-  // REVERSE CHECK: If profile already exists, redirect to Dashboard
+  // If profile already exists, redirect to Dashboard
   useEffect(() => {
     if (!profileLoading && profile) {
-      console.log('User already has profile on Onboarding page, redirecting to Dashboard');
-      window.location.href = '/';
+      navigate('/', { replace: true });
     }
-  }, [profileLoading, profile]);
+  }, [profileLoading, profile, navigate]);
+
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-16 h-16 border-4 border-gold border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (profile) {
+    return null;
+  }
 
   const handleOnboarding = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,9 +98,8 @@ const Onboarding: React.FC = () => {
           description: message,
         });
         // Hard redirect to Dashboard
-        console.log('Profile saved successfully, redirecting to Dashboard');
         setTimeout(() => {
-          window.location.href = '/';
+          navigate('/', { replace: true });
         }, 500);
       }
     } catch (err) {
@@ -97,9 +109,8 @@ const Onboarding: React.FC = () => {
         description: 'حدث خطأ. سيتم نقلك للصفحة الرئيسية',
         variant: 'destructive',
       });
-      // Hard redirect
       setTimeout(() => {
-        window.location.href = '/';
+        navigate('/', { replace: true });
       }, 1000);
     } finally {
       setIsSubmitting(false);
